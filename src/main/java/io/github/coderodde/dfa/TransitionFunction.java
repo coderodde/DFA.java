@@ -1,5 +1,6 @@
 package io.github.coderodde.dfa;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -13,6 +14,9 @@ public class TransitionFunction {
     final Map<Integer, Map<Character, Integer>> function = 
           new HashMap<>();
     
+    private final Set<Character> alphabet = new HashSet<>();
+    private final Set<Integer>   states   = new HashSet<>();
+    
     public TransitionFunction() {
         
     }
@@ -23,14 +27,32 @@ public class TransitionFunction {
      * @param tf the transition function to copy.
      */
     public TransitionFunction(TransitionFunction tf) {
-        for (Integer i : tf.function.keySet()) {
-            this.function.put(i, new HashMap<>(tf.function.get(i)));
+        for (Map.Entry<Integer, Map<Character, Integer>> e1 
+                : tf.function.entrySet()) {
+            
+            int state = e1.getKey();
+            
+            if (!this.function.containsKey(state)) {
+                this.function.put(state, new HashMap<>());
+            }
+            
+            for (Map.Entry<Character, Integer> e2 : e1.getValue().entrySet()) {
+                this.function.get(state).put(e2.getKey(), e2.getValue());
+            }
+            
+            this.states.addAll(tf.function.get(state).values());
         }
+        
+        this.states.addAll(tf.function.keySet());
+        this.alphabet.addAll(tf.getAlphabet());
     }
 
     public void setTransition(int startState, 
                               int goalState,
                               char character) {
+        alphabet.add(character);
+        states.add(startState);
+        states.add(goalState);
         function.putIfAbsent(startState, new HashMap<>());
         function.get(startState).put(character, goalState);
     }
@@ -40,27 +62,11 @@ public class TransitionFunction {
         return m == null ? null : m.get(character);
     }
     
-    public Set<Character> getActualAlphabet() {
-        Set<Character> alphabet = new HashSet<>();
-        
-        for (Map<Character, Integer> m : function.values()) {
-            alphabet.addAll(m.keySet());
-        }
-        
-        return alphabet;
+    public Set<Character> getAlphabet() {
+        return Collections.unmodifiableSet(alphabet);
     }
     
     public Set<Integer> getAllStates() {
-        Set<Integer> states = new HashSet<>();
-        
-        for (Integer i : function.keySet()) {
-            states.add(i);
-            
-            for (Integer j : function.get(i).values()) {
-                states.add(j);
-            }
-        }
-        
         return states;
     }
 }
