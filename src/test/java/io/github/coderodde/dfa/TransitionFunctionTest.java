@@ -9,10 +9,10 @@ public class TransitionFunctionTest {
     @Test
     public void actualAlphabet() {
         TransitionFunction tf = new TransitionFunction();
-        tf.setTransition(1, 2, 'a');
-        tf.setTransition(1, 3, 'b');
-        tf.setTransition(1, 4, 'c');
-        tf.setTransition(1, 5, 'b');
+        tf.addStateTransition(1, 2, 'a');
+        tf.addStateTransition(1, 3, 'b');
+        tf.addStateTransition(1, 4, 'c');
+        tf.addStateTransition(1, 5, 'b');
         
         assertEquals(Set.of('a', 'b', 'c'), tf.getAlphabet());
     }

@@ -17,10 +17,28 @@ import java.util.Set;
  */
 public class DFA {
     
+    /**
+     * The set of accepting states.
+     */
     private final Set<Integer> acceptingStates = new HashSet<>();
+    
+    /**
+     * The start state.
+     */
     private final int startState;
+    
+    /**
+     * The transition function.
+     */
     private final TransitionFunction transitionFunction;
 
+    /**
+     * Constructs this DFA.
+     * 
+     * @param transitionFunction the transition function.
+     * @param startState         the start state.
+     * @param acceptingStates    the accepting states.
+     */
     public DFA(TransitionFunction transitionFunction,
                int startState,
                Set<Integer> acceptingStates) {
@@ -35,14 +53,29 @@ public class DFA {
         }
     }
     
+    /**
+     * Returns the start state.
+     * 
+     * @return the start state.
+     */
     public int getStartState() {
         return startState;
     }
     
+    /**
+     * Returns an unmodifiable view over the accepting states.
+     * 
+     * @return the accepting states.
+     */
     public Set<Integer> getAcceptingStates() {
         return Collections.unmodifiableSet(acceptingStates);
     }
     
+    /**
+     * Adds the accepting state to this DFA.
+     * 
+     * @param state the accepting state to add.
+     */
     public void addAcceptingState(int state) {
         if (!transitionFunction.getAllStates().contains(state)) {
             throw new IllegalArgumentException(
@@ -53,14 +86,36 @@ public class DFA {
         acceptingStates.add(state);
     }
     
+    /**
+     * Processes a single state transition.
+     * 
+     * @param state  the source state.
+     * @param symbol the symbol.
+     * 
+     * @return the next state or {@code null} if the transition is not found.
+     */
     public Integer process(int state, char symbol) {
         return transitionFunction.process(state, symbol);
     }
     
+    /**
+     * Returns the transition function.
+     * 
+     * @return the transition function.
+     */
     public TransitionFunction getTransitionFunction() {
         return transitionFunction;
     }
 
+    /**
+     * Checks whether the input string {@code text} belongs to the regular 
+     * language modelled by this DFA.
+     * 
+     * @param text the text to check.
+     * 
+     * @return {@code true} if and only if the input string belongs to the 
+     *         regular language imposed by this DFA.
+     */
     public boolean matches(String text) {
         Integer currentState = startState;
 
@@ -75,10 +130,16 @@ public class DFA {
         return acceptingStates.contains(currentState);
     }
     
+    /**
+     * Computes all unreachable states in this DFA.
+     * 
+     * @return the set of unreachable states.
+     */
     public Set<Integer> getUnreachableStates() {
         Deque<Integer> queue = new ArrayDeque<>();
         Set<Integer> visited = new HashSet<>();
-        Set<Integer> allStates = transitionFunction.getAllStates();
+        Set<Integer> allStates = 
+                new HashSet<>(transitionFunction.getAllStates());
         
         queue.add(startState);
         
@@ -109,6 +170,9 @@ public class DFA {
         return allStates;
     }
     
+    /**
+     * Adds all missing transitions to this DFA.
+     */
     public void addMissingTransiitions() {
         Integer sink = null;
         
@@ -119,7 +183,7 @@ public class DFA {
                         sink = createRandomSinkState();
                     }
                     
-                    transitionFunction.setTransition(state,
+                    transitionFunction.addStateTransition(state,
                                                      sink, 
                                                      symbol);
                 }
@@ -127,13 +191,27 @@ public class DFA {
         }
     }
     
+    /**
+     * Computes and returns an union DFA composed of this DFA and {@code dfa}.
+     * 
+     * @param dfa the second DFA.
+     * 
+     * @return the union of this DFA and {@code dfa}.
+     */
     public DFA union(DFA dfa) {
         Set<Character> alphabet = new HashSet<>();
+        
         alphabet.addAll(this.getTransitionFunction().getAlphabet());
         alphabet.addAll( dfa.getTransitionFunction().getAlphabet());
         
         DFA dfa1 = this.normalizeAlphabet(alphabet);
-        DFA dfa2 = dfa. normalizeAlphabet(alphabet);
+        DFA dfa2 =  dfa.normalizeAlphabet(alphabet);
+        
+        dfa1.addMissingTransiitions();
+        dfa2.addMissingTransiitions();
+        
+        dfa1.pruneUnreachableStates();
+        dfa2.pruneUnreachableStates();  
         
         TransitionFunction productTransitionFunction = 
                 new TransitionFunction();
@@ -141,14 +219,6 @@ public class DFA {
         Set<Integer> productAcceptingState = new HashSet<>();
         Map<IntegerPair, Integer> m        = new HashMap<>();
         int id = 0;
-        
-        for (int y : dfa1.getTransitionFunction().getAllStates()) {
-            for (int x : dfa2.getTransitionFunction().getAllStates()) {
-                m.put(new IntegerPair(x, y), id++);
-            }
-        }
-        
-        id = 0;
         
         for (int p : dfa1.getTransitionFunction().getAllStates()) {
             for (int q : dfa2.getTransitionFunction().getAllStates()) {
@@ -185,7 +255,7 @@ public class DFA {
                 
                 IntegerPair nip = new IntegerPair(nq, np);
                 
-                productTransitionFunction.setTransition(m.get(ip),
+                productTransitionFunction.addStateTransition(m.get(ip),
                                                         m.get(nip),
                                                         symbol);
             }
@@ -231,12 +301,12 @@ public class DFA {
         }
         
         for (Entry e : entries) {
-            delta.setTransition(e.state, e.sink, e.symbol);
+            delta.addStateTransition(e.state, e.sink, e.symbol);
         }
         
         if (sinkUsed) {
             for (char symbol : alphabet) {
-                delta.setTransition(sink, sink, symbol);
+                delta.addStateTransition(sink, sink, symbol);
             }
         }
         
@@ -245,6 +315,19 @@ public class DFA {
                        acceptingStates);
     }
     
+    public void pruneUnreachableStates() {
+        Set<Integer> unreachableStates = getUnreachableStates();
+        
+        for (Integer s : unreachableStates) {
+            transitionFunction.function.remove(s);
+        }
+    }
+    
+    /** 
+     * Creates a random sink state that does not yet appear in this DFA.
+     * 
+     * @return a random sink state. 
+     */
     private Integer createRandomSinkState() {
         Random random = new Random();
         Integer sink;
@@ -256,6 +339,9 @@ public class DFA {
         return sink;
     }
 
+    /**
+     * Used for coupling state pairs.
+     */
     private static final class IntegerPair {
 
         public final int first;
