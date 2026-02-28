@@ -54,6 +54,9 @@ public class DFATest {
         DFA union = dfa1.union(dfa2);
         
         assertFalse(union.matches(""));
+        assertFalse(union.matches("0"));
+        assertFalse(union.matches("00"));
+        assertFalse(union.matches("000"));
         
         assertTrue(union.matches("1"));
         assertTrue(union.matches("01"));

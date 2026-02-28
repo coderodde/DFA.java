@@ -53,6 +53,10 @@ public class DFA {
         acceptingStates.add(state);
     }
     
+    public Integer process(int state, char symbol) {
+        return transitionFunction.process(state, symbol);
+    }
+    
     public TransitionFunction getTransitionFunction() {
         return transitionFunction;
     }
@@ -164,6 +168,26 @@ public class DFA {
             if (dfa1.getAcceptingStates().contains(p) || 
                 dfa2.getAcceptingStates().contains(q)) {
                 productAcceptingState.add(m.get(ip));
+            }
+        }
+        
+        for (IntegerPair ip : m.keySet()) {
+            for (char symbol : alphabet) {
+                int q = ip.first;
+                int p = ip.second;
+                
+                Integer nq = dfa1.process(q, symbol);
+                Integer np = dfa2.process(p, symbol);
+                
+                if (nq == null || np == null) {
+                    continue;
+                }
+                
+                IntegerPair nip = new IntegerPair(nq, np);
+                
+                productTransitionFunction.setTransition(m.get(ip),
+                                                        m.get(nip),
+                                                        symbol);
             }
         }
         
