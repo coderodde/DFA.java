@@ -35,4 +35,28 @@ public class DFATest {
                 Set.of('a', 'b', 'c', 'd'), 
                 normalized.getTransitionFunction().getAlphabet());
     }
+    
+    @Test
+    public void union() {
+        TransitionFunction tf1 = new TransitionFunction();
+        TransitionFunction tf2 = new TransitionFunction();
+        
+        tf1.setTransition(0, 0, '0');
+        tf1.setTransition(0, 1, '1');
+        tf1.setTransition(1, 0, '0');
+        tf1.setTransition(1, 1, '1');
+        
+        tf2.setTransition(0, 1, '1');
+        tf2.setTransition(1, 2, '1');
+        
+        DFA dfa1 = new DFA(tf1, 0, Set.of(1));
+        DFA dfa2 = new DFA(tf2, 0, Set.of(2));
+        DFA union = dfa1.union(dfa2);
+        
+        assertFalse(union.matches(""));
+        
+        assertTrue(union.matches("1"));
+        assertTrue(union.matches("01"));
+        assertTrue(union.matches("01111"));
+    }
 }

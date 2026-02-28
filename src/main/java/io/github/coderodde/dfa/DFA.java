@@ -29,6 +29,10 @@ public class DFA {
                 Objects.requireNonNull(transitionFunction,
                                        "Transition function is null."));
         this.startState = startState;
+        
+        for (Integer state : acceptingStates) {
+            addAcceptingState(state);
+        }
     }
     
     public int getStartState() {
@@ -124,8 +128,8 @@ public class DFA {
         alphabet.addAll(this.getTransitionFunction().getAlphabet());
         alphabet.addAll( dfa.getTransitionFunction().getAlphabet());
         
-        DFA dfa1 = normalizeAlphabet(alphabet);
-        DFA dfa2 = normalizeAlphabet(alphabet);
+        DFA dfa1 = this.normalizeAlphabet(alphabet);
+        DFA dfa2 = dfa. normalizeAlphabet(alphabet);
         
         TransitionFunction productTransitionFunction = 
                 new TransitionFunction();
@@ -238,16 +242,23 @@ public class DFA {
             this.second = second;
         }
         
+        @Override
         public int hashCode() {
             return first ^ ~second;
         }
         
+        @Override
         public boolean equals(Object object) {
             if (object instanceof IntegerPair other) {
                 return first == other.first && second == other.second;
             }
             
             return false;
+        }
+        
+        @Override
+        public String toString() {
+            return String.format("[%d, %d]", first, second);
         }
     }
 }
