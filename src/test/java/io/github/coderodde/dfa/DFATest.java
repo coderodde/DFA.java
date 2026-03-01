@@ -15,8 +15,14 @@ public class DFATest {
         tf.addStateTransition(2, 12, 'c');
         tf.addStateTransition(3, 12, 'a');
         DFA dfa = new DFA(tf, 0, Set.of());
+        dfa.addAcceptingState(12);
+        dfa.addAcceptingState(3);
+        dfa.addAcceptingState(1);
+        assertEquals(Set.of(12, 3, 1), dfa.getAcceptingStates());
         Set<Integer> unreachable = dfa.getUnreachableStates();
         assertEquals(Set.of(2, 3, 12), unreachable);
+        dfa.pruneUnreachableStates();
+        assertEquals(Set.of(1), dfa.getAcceptingStates());
     }
     
     @Test
