@@ -14,16 +14,16 @@ public class MooresDFAMinimizer implements DFAMinimizer {
 
     @Override
     public DFA minimize(DFA target) {
-        target.addMissingTransiitions();
-        target.pruneUnreachableStates();
+        target.addMissingTransitions();
+//        target.pruneUnreachableStates();
         
         List<Set<Integer>> P = new ArrayList<>();
         
         Set<Integer> bacc = target.getAcceptingStates();
         Set<Integer> brej = 
             setminus(
-                target.getTransitionFunction().getAllStates(),
-                target.getAcceptingStates());
+                new HashSet<>(target.getTransitionFunction().getAllStates()),
+                new HashSet<>(target.getAcceptingStates()));
         
         if (!bacc.isEmpty()) {
             P.add(bacc);
@@ -43,11 +43,10 @@ public class MooresDFAMinimizer implements DFAMinimizer {
             List<Set<Integer>> Pnew = new ArrayList<>();
             
             for (Set<Integer> block : P) {
-                List<Integer> signature = new ArrayList<>();
                 Map<List<Integer>, Set<Integer>> groups = new HashMap<>();
                 
                 for (Integer q : block) {
-                    signature.clear();
+                    List<Integer> signature = new ArrayList<>();
                     
                     for (char symbol 
                             : target.getTransitionFunction().getAlphabet()) {
@@ -55,24 +54,17 @@ public class MooresDFAMinimizer implements DFAMinimizer {
                         int nextState = target.process(q, symbol);
                         int blockId   = blockIdMap.get(nextState);
                         signature.add(blockId);
-                       
                     }
                     
-                    if (!groups.containsKey(signature)) {
-                        groups.put(signature, new HashSet<>());
-                    }
-                    
-                    groups.get(signature).add(q);
+                    groups.computeIfAbsent(
+                            signature, _ -> new HashSet<>()).add(q);
                 }
                 
                 if (groups.size() == 1) {
                     Pnew.add(block);
                 } else {
                     changed = true;
-                    
-                    for (List<Integer> sig : groups.keySet()) {
-                        Pnew.add(groups.get(sig));
-                    }
+                    Pnew.addAll(groups.values());
                 }
             }
             
@@ -80,59 +72,52 @@ public class MooresDFAMinimizer implements DFAMinimizer {
             blockIdMap = buildBlockIdMap(P);
         }
         
-        Set<Integer> qmin = new HashSet<>();
+        Map<Set<Integer>, Integer> blockReprepsentativeMap = new HashMap<>();
+        Map<Integer, Integer> representationOfStateMap     = new HashMap<>();
         
         for (Set<Integer> block : P) {
-            qmin.add(block.iterator().next());
-        }
-        
-        Integer q0min = null;
-        
-        for (Set<Integer> block : P) {
-            if (block.contains(q0min)) {
-                q0min = block.iterator().next();
-                break;
+            int representative = block.iterator().next();
+            blockReprepsentativeMap.put(block, representative);
+            
+            for (int q : block) {
+                representationOfStateMap.put(q, representative);
             }
         }
         
+        Set<Integer> qmin = new HashSet<>(blockReprepsentativeMap.values());
+        int q0 = target.getStartState();
+        Integer q0min = representationOfStateMap.get(q0);
+        
         Set<Integer> fmin = new HashSet<>();
+        Set<Integer> F = target.getAcceptingStates();
         
         for (Set<Integer> block : P) {
             boolean isAcceptingBlock = false;
             
-            for (Integer q : block) {
-                if (fmin.contains(q)) {
+            for (int q : block) {
+                if (F.contains(q)) {
                     isAcceptingBlock = true;
                     break;
                 }
             }
             
             if (isAcceptingBlock) {
-                fmin.add(block.iterator().next());
+                fmin.add(blockReprepsentativeMap.get(block));
             }
         }
         
         TransitionFunction tfmin = new TransitionFunction();
+        Set<Character> alphabet = target.getTransitionFunction().getAlphabet();
         
         for (Set<Integer> block : P) {
-            int r = block.iterator().next();
+            int repr = blockReprepsentativeMap.get(block);
             
-            for (char symbol : target.getTransitionFunction().getAlphabet()) {
-                int rNext = target.getTransitionFunction().process(r, symbol);
+            for (char symbol : alphabet) {
+                int reprNext = target.getTransitionFunction()
+                                     .process(repr, symbol);
                 
-                Set<Integer> nextBlock = null;
-                
-                for (Set<Integer> block2 : P) {
-                    if (block2.contains(rNext)) {
-                        nextBlock = block2;
-                        break;
-                    }
-                }
-                
-                tfmin.addStateTransition(
-                        block.iterator().next(),
-                        nextBlock.iterator().next(),
-                        symbol);
+                int nextRepr = representationOfStateMap.get(reprNext);
+                tfmin.addStateTransition(repr, nextRepr, symbol);
             }
         }
         

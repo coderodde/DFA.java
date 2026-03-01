@@ -79,8 +79,8 @@ public class TransitionFunction {
                                    char character) {
         boolean added = 
                 alphabet.add(character)
-                && states.add(startState)
-                && states.add(goalState);
+                || states.add(startState)
+                || states.add(goalState);
         
         if (function.containsKey(startState)) {
             var mapping = function.get(startState);

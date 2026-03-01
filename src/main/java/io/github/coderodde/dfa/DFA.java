@@ -173,8 +173,9 @@ public class DFA {
     /**
      * Adds all missing transitions to this DFA.
      */
-    public void addMissingTransiitions() {
+    public void addMissingTransitions() {
         Integer sink = null;
+        List<TransitionEntry> transitionEntries = new ArrayList<>();
         
         for (int state : transitionFunction.getAllStates()) {
             for (char symbol : transitionFunction.getAlphabet()) {
@@ -183,10 +184,24 @@ public class DFA {
                         sink = createRandomSinkState();
                     }
                     
-                    transitionFunction.addStateTransition(state,
-                                                     sink, 
-                                                     symbol);
+                    transitionEntries.add(
+                        new TransitionEntry(
+                                state, 
+                                sink, 
+                                symbol));
                 }
+            }
+        }
+        
+        for (TransitionEntry e : transitionEntries) {
+            transitionFunction.addStateTransition(e.state,
+                                                  e.sink, 
+                                                  e.symbol);
+        }
+        
+        if (sink != null) {
+            for (char symbol : transitionFunction.getAlphabet()) {
+                transitionFunction.addStateTransition(sink, sink, symbol);
             }
         }
     }
@@ -207,8 +222,8 @@ public class DFA {
         DFA dfa1 = this.normalizeAlphabet(alphabet);
         DFA dfa2 =  dfa.normalizeAlphabet(alphabet);
         
-        dfa1.addMissingTransiitions();
-        dfa2.addMissingTransiitions();
+        dfa1.addMissingTransitions();
+        dfa2.addMissingTransitions();
         
         dfa1.pruneUnreachableStates();
         dfa2.pruneUnreachableStates();  
@@ -269,20 +284,7 @@ public class DFA {
     
     public DFA normalizeAlphabet(Set<Character> alphabet) {
         
-        class Entry {
-            
-            Entry(int state, int sink, char symbol) {
-                this.state  = state;
-                this.sink   = sink;
-                this.symbol = symbol;
-            }
-            
-            final int state;
-            final int sink;
-            char symbol;
-        }
-        
-        List<Entry> entries = new ArrayList<>();
+        List<TransitionEntry> entries = new ArrayList<>();
         
         TransitionFunction delta = new TransitionFunction(transitionFunction);
         int sink = createRandomSinkState();
@@ -295,12 +297,12 @@ public class DFA {
                         sinkUsed = true;
                     }
                     
-                    entries.add(new Entry(state, sink, symbol));
+                    entries.add(new TransitionEntry(state, sink, symbol));
                 }
             }
         }
         
-        for (Entry e : entries) {
+        for (TransitionEntry e : entries) {
             delta.addStateTransition(e.state, e.sink, e.symbol);
         }
         
@@ -371,5 +373,18 @@ public class DFA {
         public String toString() {
             return String.format("[%d, %d]", first, second);
         }
+    }
+
+    private static final class TransitionEntry {
+
+        TransitionEntry(int state, int sink, char symbol) {
+            this.state  = state;
+            this.sink   = sink;
+            this.symbol = symbol;
+        }
+
+        final int state;
+        final int sink;
+        char symbol;
     }
 }
