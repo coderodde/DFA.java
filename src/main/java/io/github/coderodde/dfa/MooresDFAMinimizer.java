@@ -70,14 +70,73 @@ public class MooresDFAMinimizer implements DFAMinimizer {
                 } else {
                     changed = true;
                     
-                    for (List<Integer> signature : groups) {
-                        
+                    for (List<Integer> sig : groups.keySet()) {
+                        Pnew.add(groups.get(sig));
                     }
                 }
             }
+            
+            P = Pnew;
+            blockIdMap = buildBlockIdMap(P);
         }
         
-        return null;    
+        Set<Integer> qmin = new HashSet<>();
+        
+        for (Set<Integer> block : P) {
+            qmin.add(block.iterator().next());
+        }
+        
+        Integer q0min = null;
+        
+        for (Set<Integer> block : P) {
+            if (block.contains(q0min)) {
+                q0min = block.iterator().next();
+                break;
+            }
+        }
+        
+        Set<Integer> fmin = new HashSet<>();
+        
+        for (Set<Integer> block : P) {
+            boolean isAcceptingBlock = false;
+            
+            for (Integer q : block) {
+                if (fmin.contains(q)) {
+                    isAcceptingBlock = true;
+                    break;
+                }
+            }
+            
+            if (isAcceptingBlock) {
+                fmin.add(block.iterator().next());
+            }
+        }
+        
+        TransitionFunction tfmin = new TransitionFunction();
+        
+        for (Set<Integer> block : P) {
+            int r = block.iterator().next();
+            
+            for (char symbol : target.getTransitionFunction().getAlphabet()) {
+                int rNext = target.getTransitionFunction().process(r, symbol);
+                
+                Set<Integer> nextBlock = null;
+                
+                for (Set<Integer> block2 : P) {
+                    if (block2.contains(rNext)) {
+                        nextBlock = block2;
+                        break;
+                    }
+                }
+                
+                tfmin.addStateTransition(
+                        block.iterator().next(),
+                        nextBlock.iterator().next(),
+                        symbol);
+            }
+        }
+        
+        return new DFA(tfmin, q0min, fmin);
     }
     
     private static Map<Integer, Integer> buildBlockIdMap(List<Set<Integer>> P) {
