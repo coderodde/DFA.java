@@ -1,5 +1,6 @@
 package io.github.coderodde.dfa;
 
+import static io.github.coderodde.dfa.DFAMinimizer.setminus;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,7 +16,6 @@ public class MooresDFAMinimizer implements DFAMinimizer {
     @Override
     public DFA minimize(DFA target) {
         target.addMissingTransitions();
-//        target.pruneUnreachableStates();
         
         List<Set<Integer>> P = new ArrayList<>();
         
@@ -138,10 +138,5 @@ public class MooresDFAMinimizer implements DFAMinimizer {
         }
         
         return blockId;
-    }
-    
-    private static Set<Integer> setminus(Set<Integer> a, Set<Integer> b) {
-        a.removeAll(b);
-        return a;
     }
 }

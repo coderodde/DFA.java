@@ -23,12 +23,6 @@ public class DFATest {
         assertEquals(Set.of(2, 3, 12), unreachable);
         dfa.pruneUnreachableStates();
         assertEquals(Set.of(1), dfa.getAcceptingStates());
-        
-        System.out.println(dfa.getTransitionFunction().numberOfTransitions() + " " + dfa.getTransitionFunction().getAllStates().size());
-        
-        DFA minDfa = new MooresDFAMinimizer().minimize(dfa);
-        
-        System.out.println(minDfa.getTransitionFunction().numberOfTransitions() + " " + minDfa.getTransitionFunction().getAllStates().size());
     }
     
     @Test

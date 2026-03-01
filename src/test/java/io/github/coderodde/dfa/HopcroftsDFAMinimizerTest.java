@@ -4,7 +4,7 @@ import java.util.Set;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-public class MooresDFAMinimizerTest {
+public class HopcroftsDFAMinimizerTest {
 
     @Test
     public void minimize() {
@@ -24,7 +24,7 @@ public class MooresDFAMinimizerTest {
         
         assertEquals(4, dfa.getTransitionFunction().getAllStates().size());
         
-        DFA minDfa = new MooresDFAMinimizer().minimize(dfa);
+        DFA minDfa = new HopcroftsDFAMinimizer().minimize(dfa);
         
         assertEquals(2, minDfa.getTransitionFunction().getAllStates().size());
         
