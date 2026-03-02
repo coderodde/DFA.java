@@ -17,13 +17,15 @@ import java.util.Set;
  */
 public class DFABenchmark {
     
-    private static final int TRANSITION_COUNT = 2500;
+    private static final int MAXIMUM_TRANSITION_COUNT = 2500;
     private static final int STATES = 100;
     private static final int ACCEPTING_STATES = 9;
     private static final int ITERATIONS = 100;
     
     public static void main(String[] args) {
         DFA dfa = getRandomDFA();
+        System.out.print("Source DFA: ");
+        printDFA(dfa);
         
         DFABenchmarkRunnable runnableMoore = 
             new DFABenchmarkRunnable(
@@ -54,13 +56,16 @@ public class DFABenchmark {
             "Algorithms agree: " + 
             matches(runnableMoore.getResultDFAs(), 
                     runnableHopcroft.getResultDFAs()));
+        
+        System.out.print("Result DFA: ");
+        printDFA(runnableMoore.getResultDFAs().get(0));
     }
     
     public static TransitionFunction getRandomTransitionFunction() {
         TransitionFunction tf = new TransitionFunction();
         Random random = new Random(13L);
         
-        for (int i = 0; i < TRANSITION_COUNT; ++i) {
+        for (int i = 0; i < MAXIMUM_TRANSITION_COUNT; ++i) {
             int sourceState = random.nextInt(STATES);
             int targetState = random.nextInt(STATES);
             char symbol = random.nextBoolean() ? '0' : '1';
@@ -121,5 +126,15 @@ public class DFABenchmark {
         }
         
         return true;
+    }
+    
+    private static void printDFA(DFA dfa) {
+        System.out.println(
+            "states: "
+            + dfa.getTransitionFunction().getAllStates().size() 
+            + ", transitions: " 
+            + dfa.getTransitionFunction().numberOfTransitions() 
+            + ", alphabet = " 
+            + dfa.getTransitionFunction().getAlphabet());
     }
 }

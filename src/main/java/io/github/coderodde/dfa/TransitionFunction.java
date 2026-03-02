@@ -77,31 +77,16 @@ public class TransitionFunction {
     public void addStateTransition(int startState, 
                                    int goalState,
                                    char character) {
-        boolean added1 = alphabet.add(character);
-        boolean added2 = states.add(startState);
-        boolean added3 = states.add(goalState);
-        boolean modified = false;
+        alphabet.add(character);
+        states.add(startState);
+        states.add(goalState);
         
-        if (function.containsKey(startState)) {
-            var mapping = function.get(startState);
-            
-            if (!mapping.containsKey(character)) {
-                modified = true;
-                mapping.put(character, goalState);
-            } else if (!mapping.get(character).equals(goalState)) {
-                modified = true;
-                mapping.put(character, goalState);
-            }
-        } else {
-            modified = true;
-            
-            function.computeIfAbsent(
-                    startState, 
-                    _ -> new HashMap<>())
-                    .put(character, goalState);
-        }
+        Map<Character, Integer> mapping = 
+                function.computeIfAbsent(startState, _ -> new HashMap<>());
         
-        if (modified || added1 || added2 || added3) {
+        Integer old = mapping.put(character, goalState);
+        
+        if (old == null) {
             ++numberOfTransitions;
         }
     }
