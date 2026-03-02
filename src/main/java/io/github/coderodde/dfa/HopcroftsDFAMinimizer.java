@@ -17,6 +17,7 @@ public class HopcroftsDFAMinimizer implements DFAMinimizer {
 
     @Override
     public DFA minimize(DFA target) {
+        target.pruneUnreachableStates();
         target.addMissingTransitions();
         
         Set<Character> alphabet = target.getTransitionFunction().getAlphabet();

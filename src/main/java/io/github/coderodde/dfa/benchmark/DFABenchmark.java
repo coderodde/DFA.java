@@ -37,8 +37,6 @@ public class DFABenchmark {
                 new HopcroftsDFAMinimizer(),
                 ITERATIONS);
         
-        Runner runner = new Runner();
-        
         RunStatistics rsMoore    = Runner.measure(runnableMoore, ITERATIONS);
         RunStatistics rsHopcroft = Runner.measure(runnableHopcroft, 
                                                   ITERATIONS);

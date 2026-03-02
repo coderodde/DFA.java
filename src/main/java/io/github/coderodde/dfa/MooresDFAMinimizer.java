@@ -15,6 +15,7 @@ public class MooresDFAMinimizer implements DFAMinimizer {
 
     @Override
     public DFA minimize(DFA target) {
+        target.pruneUnreachableStates();
         target.addMissingTransitions();
         
         List<Set<Integer>> P = new ArrayList<>();

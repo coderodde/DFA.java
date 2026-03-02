@@ -34,7 +34,6 @@ public class DFABenchmarkRunnable implements Runnable {
         }
         
         resultDfas.add(algorithm.minimize(dfas.get(measured)));
-        
         ++measured;
     }
     

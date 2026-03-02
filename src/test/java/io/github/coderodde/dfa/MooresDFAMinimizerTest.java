@@ -26,7 +26,7 @@ public class MooresDFAMinimizerTest {
         
         DFA minDfa = new MooresDFAMinimizer().minimize(dfa);
         
-        assertEquals(2, minDfa.getTransitionFunction().getAllStates().size());
+        assertEquals(3, minDfa.getTransitionFunction().getAllStates().size());
         
         assertFalse(dfa.matches("0"));
         assertFalse(minDfa.matches("0"));

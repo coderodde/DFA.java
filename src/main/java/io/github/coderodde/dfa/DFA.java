@@ -323,6 +323,7 @@ public class DFA {
         for (Integer s : unreachableStates) {
             transitionFunction.function.remove(s);
             acceptingStates.remove(s);
+            
         }
     }
     

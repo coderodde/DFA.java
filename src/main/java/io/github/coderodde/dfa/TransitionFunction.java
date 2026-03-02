@@ -14,7 +14,7 @@ public class TransitionFunction {
     /**
      * The number of state transitions.
      */
-    private int size;
+    private int numberOfTransitions;
 
     /**
      * The actual data store for holding the state transitions. Is accessed by 
@@ -45,7 +45,7 @@ public class TransitionFunction {
      * @param tf the transition function to copy.
      */
     public TransitionFunction(TransitionFunction tf) {
-        size = tf.size;
+        numberOfTransitions = tf.numberOfTransitions;
         
         for (Map.Entry<Integer, Map<Character, Integer>> e1 
                 : tf.function.entrySet()) {
@@ -77,23 +77,23 @@ public class TransitionFunction {
     public void addStateTransition(int startState, 
                                    int goalState,
                                    char character) {
-        boolean added = 
-                alphabet.add(character)
-                || states.add(startState)
-                || states.add(goalState);
+        boolean added1 = alphabet.add(character);
+        boolean added2 = states.add(startState);
+        boolean added3 = states.add(goalState);
+        boolean modified = false;
         
         if (function.containsKey(startState)) {
             var mapping = function.get(startState);
             
             if (!mapping.containsKey(character)) {
-                added = true;
+                modified = true;
                 mapping.put(character, goalState);
             } else if (!mapping.get(character).equals(goalState)) {
-                added = true;
+                modified = true;
                 mapping.put(character, goalState);
             }
         } else {
-            added = true;
+            modified = true;
             
             function.computeIfAbsent(
                     startState, 
@@ -101,8 +101,8 @@ public class TransitionFunction {
                     .put(character, goalState);
         }
         
-        if (added) {
-            ++size;
+        if (modified || added1 || added2 || added3) {
+            ++numberOfTransitions;
         }
     }
 
@@ -142,6 +142,6 @@ public class TransitionFunction {
      * @return the number of state transitions.
      */
     public int numberOfTransitions() {
-        return size;
+        return numberOfTransitions;
     }
 }
