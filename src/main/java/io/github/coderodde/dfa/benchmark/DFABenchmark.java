@@ -113,6 +113,11 @@ public class DFABenchmark {
                 dfa2.getTransitionFunction().getAllStates().size()) {
                 return false;
             }
+            
+            if (dfa1.getTransitionFunction().numberOfTransitions() != 
+                dfa2.getTransitionFunction().numberOfTransitions()) {
+                return false;
+            }
         }
         
         return true;
