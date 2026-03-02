@@ -1,6 +1,5 @@
 package io.github.coderodde.dfa;
 
-import static io.github.coderodde.dfa.DFAMinimizer.setminus;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
@@ -41,7 +40,10 @@ public class HopcroftsDFAMinimizer implements DFAMinimizer {
         
         Deque<Pair> W  = new ArrayDeque<>();
         Set<Pair> setW = new HashSet<>();
-        Set<Integer> S = new HashSet<>();
+        // When we want to remove a pair from W, we just mark the pair as 
+        // "removed" by adding it to the 'removedSetW':
+        Set<Pair> removedSetW = new HashSet<>();
+        Set<Integer> S;
         
         if (acc.size() <= rej.size()) {
             S = acc;
@@ -57,6 +59,12 @@ public class HopcroftsDFAMinimizer implements DFAMinimizer {
         
         while (!W.isEmpty()) {
             Pair splitter = W.removeFirst();
+            
+            if (removedSetW.contains(splitter)) {
+                continue;
+            }
+            
+            removedSetW.add(splitter);
             setW.remove(splitter);
             
             Set<Integer> pre = new HashSet<>();
@@ -91,7 +99,7 @@ public class HopcroftsDFAMinimizer implements DFAMinimizer {
                     
                     if (setW.contains(old)) {
                         setW.remove(old);
-                        W.remove(old);
+                        removedSetW.add(old);
                         
                         Pair p1 = new Pair(Y1, symbol);
                         Pair p2 = new Pair(Y2, symbol);

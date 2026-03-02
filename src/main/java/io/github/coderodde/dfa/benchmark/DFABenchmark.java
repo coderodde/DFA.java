@@ -17,10 +17,10 @@ import java.util.Set;
  */
 public class DFABenchmark {
     
-    private static final int MAXIMUM_TRANSITION_COUNT = 2500;
-    private static final int STATES = 100;
+    private static final int MAXIMUM_TRANSITION_COUNT = 1857;
+    private static final int STATES = 1000;
     private static final int ACCEPTING_STATES = 9;
-    private static final int ITERATIONS = 100;
+    private static final int ITERATIONS = 10;
     
     public static void main(String[] args) {
         DFA dfa = getRandomDFA();
