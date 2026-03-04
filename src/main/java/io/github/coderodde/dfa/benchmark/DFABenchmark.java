@@ -7,6 +7,7 @@ import io.github.coderodde.dfa.TransitionFunction;
 // https://github.com/coderodde/RunStatistics.java
 import io.github.coderodde.statistics.run.RunStatistics;
 import io.github.coderodde.statistics.run.Runner;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -17,9 +18,9 @@ import java.util.Set;
  */
 public class DFABenchmark {
     
-    private static final int MAXIMUM_TRANSITION_COUNT = 1857;
+    private static final int MAXIMUM_TRANSITION_COUNT = 1578;
     private static final int STATES = 1000;
-    private static final int ACCEPTING_STATES = 9;
+    private static final int ACCEPTING_STATES = 100;
     private static final int ITERATIONS = 10;
     
     public static void main(String[] args) {
@@ -79,11 +80,18 @@ public class DFABenchmark {
     }
     
     public static DFA getRandomDFA() {
-        Random random = new Random(666L);
+        Random random         = new Random(666L);
         TransitionFunction tf = getRandomTransitionFunction();
-        DFA dfa = new DFA(tf, 
-                          random.nextInt(STATES), 
-                          getRandomAcceptingStates());
+        List<Integer> states  = new ArrayList<>(tf.getAllStates());
+        int start             = states.get(random.nextInt(states.size()));
+        
+        DFA dfa = new DFA(tf, start, Set.of());
+        
+        for (int i = 0; i < ACCEPTING_STATES; ++i) {
+            int index = random.nextInt(states.size());
+            int state = states.get(index);
+            dfa.addAcceptingState(state);
+        }
         
         return dfa;
     }
@@ -94,15 +102,20 @@ public class DFABenchmark {
                        dfa.getAcceptingStates());
     }
     
-    public static Set<Integer> getRandomAcceptingStates() {
+    public static Set<Integer> getRandomAcceptingStates(Set<Integer> stateSet) {
         Random random = new Random(185L);
-        Set<Integer> set = new HashSet<>();
+        Set<Integer> acceptingSetState = new HashSet<>();
+        List<Integer> states = new ArrayList<>(stateSet);
         
-        while (set.size() < ACCEPTING_STATES) {
-            set.add(random.nextInt(STATES));
+        while (acceptingSetState.size() < ACCEPTING_STATES) {
+            int state = states.get(random.nextInt(states.size()));
+            
+            if (stateSet.contains(state)) {
+                acceptingSetState.add(state);
+            }
         }
         
-        return set;
+        return acceptingSetState;
     }
     
     public static boolean matches(List<DFA> dfas1, List<DFA> dfas2) {

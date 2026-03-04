@@ -77,10 +77,6 @@ public class TransitionFunction {
     public void addStateTransition(int startState, 
                                    int goalState,
                                    char character) {
-        alphabet.add(character);
-        states.add(startState);
-        states.add(goalState);
-        
         Map<Character, Integer> mapping = 
                 function.computeIfAbsent(startState, _ -> new HashMap<>());
         
@@ -88,6 +84,11 @@ public class TransitionFunction {
         
         if (old == null) {
             ++numberOfTransitions;
+            alphabet.add(character);
+            states.add(startState);
+            states.add(goalState);
+        } else if (!old.equals(goalState)) {
+            rebuildCaches();
         }
     }
 
@@ -128,5 +129,22 @@ public class TransitionFunction {
      */
     public int numberOfTransitions() {
         return numberOfTransitions;
+    }
+    
+    private void rebuildCaches() {
+        states.clear();
+        alphabet.clear();
+        numberOfTransitions = 0;
+        
+        for (var e : function.entrySet()) {
+            int from = e.getKey();
+            states.add(from);
+            
+            for (var t : e.getValue().entrySet()) {
+                alphabet.add(t.getKey());
+                states.add(t.getValue());
+                ++numberOfTransitions;
+            }
+        }
     }
 }
